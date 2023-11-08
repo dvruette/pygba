@@ -1,0 +1,32 @@
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyGBA"
+description = "A Python wrapper around the Game Boy Advance emulator mGBA with built-in support for gymnasium environments."
+dynamic = ["version"]
+authors = [
+    { name = "Dimitri von Rütte" }
+]
+readme = "README.md"
+urls = { github = "https://github.com/dvruette/pygba" }
+license = { file = "LICENSE" }
+keywords = ["gba", "mgba", "emulator", "gymnasium", "reinforcement-learning"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries"
+]
+dependencies = [
+    "gymnasium ~= 0.29.1",
+    "numpy ~= 1.26.1",
+    "pygame ~= 2.5.2",
+]
+
+[tool.setuptools]
+packages = ["pygba"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pygba.__version__" }
