@@ -1,12 +1,12 @@
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyGBA"
 description = "A Python wrapper around the Game Boy Advance emulator mGBA with built-in support for gymnasium environments."
-dynamic = ["version"]
+version = "0.1.0"
 authors = [
     { name = "Dimitri von Rütte" }
 ]
@@ -27,6 +27,3 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["pygba"]
-
-[tool.setuptools.dynamic]
-version = { attr = "pygba.__version__" }
