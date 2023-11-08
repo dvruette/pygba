@@ -5,7 +5,7 @@ A Python wrapper around the Game Boy Advance emulator mGBA with built-in support
 
 ## Usage
 
-PyGBA is designed to be used by bots/AI agents. It provides an easy-to-use interface to interact with the emulator as well as a [`gymnasium` environment](https://github.com/Farama-Foundation/Gymnasium) for reinforcement learning.
+PyGBA is designed to be used by bots/AI agents. It provides an easy-to-use interface to interact with the emulator as well as a [`gymnasium`](https://github.com/Farama-Foundation/Gymnasium) environment for reinforcement learning.
 
 While any GBA ROM can be run out-of-the box, if you want to do reward-based reinforcement learning, you might want to use a game-specific wrapper that provides a reward function. Currently, only a wrapper for [Pokemon Emerald](https://vimm.net/vault/5625) is provided, but more will be added in the future.
 
