@@ -5,14 +5,10 @@ import mgba.core
 import mgba.vfs
 import mgba.image
 import mgba.log
-from mgba.gba import GBA
-from game_wrappers.pokemon_emerald import PokemonEmerald, get_game_state, read_save_block_1, read_save_block_2
 
-from gba_env import PyGBAEnv
-from pygba import PyGBA
+from pygba import PyGBA, PyGBAEnv, PokemonEmerald
 
 mgba.log.silence()
-
 
 
 def load_pokemon_game(gba_file: str, autoload_save: bool = True):
@@ -38,7 +34,7 @@ def main():
     emerald_wrapper = PokemonEmerald()
     env = PyGBAEnv(gba, emerald_wrapper, frameskip=8, render_mode="human")
 
-    state = get_game_state(gba)
+    state = emerald_wrapper.game_state(gba)
     del state["pokedex"]
     print(json.dumps(state, indent=2))
 

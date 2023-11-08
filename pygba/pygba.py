@@ -1,6 +1,6 @@
 import mgba.core
 
-from utils import KEY_MAP
+from pygba.utils import KEY_MAP
 
 
 class PyGBA:

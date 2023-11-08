@@ -1,7 +1,7 @@
 import struct
 from collections import namedtuple
 
-from utils import BaseCharmap
+from pygba.utils import BaseCharmap
 
 
 # Pokemon Emerald Sym Addresses

@@ -6,9 +6,9 @@ import mgba.core
 import mgba.image
 import numpy as np
 
-from utils import KEY_MAP
-from pygba import PyGBA
-from game_wrappers.base import GameWrapper
+from .utils import KEY_MAP
+from .pygba import PyGBA
+from .game_wrappers.base import GameWrapper
 
 
 try:

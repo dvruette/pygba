@@ -1,6 +1,6 @@
 
-from game_wrappers.base import GameWrapper
-from utils.emerald_utils import *
+from .base import GameWrapper
+from .utils.emerald_utils import *
 
 
 def get_flag(flags, flag_id):
@@ -123,6 +123,9 @@ class PokemonEmerald(GameWrapper):
 
         self._prev_reward = 0.0
 
+    def game_state(self, gba):
+        return get_game_state(gba)
+
     def reward(self, gba, observation):
         game_state = get_game_state(gba)
 
@@ -144,9 +147,6 @@ class PokemonEmerald(GameWrapper):
     
     def reset(self, gba):
         self._prev_reward = self.reward(gba, None)
-
-    def game_state(self, gba):
-        return get_game_state(gba)
     
     def info(self, gba, observation):
         return {

@@ -3,7 +3,7 @@ from typing import Any
 
 import numpy as np
 
-from pygba import PyGBA
+from pygba.pygba import PyGBA
 
 class GameWrapper(ABC):
     @abstractmethod
