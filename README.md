@@ -3,6 +3,23 @@
 A Python wrapper around the Game Boy Advance emulator mGBA with built-in support for gymnasium environments.
 
 
+## Usage
+
+PyGBA is designed to be used by bots/AI agents. It provides an easy-to-use interface to interact with the emulator as well as a `gymnasium` environment for reinforcement learning.
+
+While any GBA ROM can be run out-of-the box, if you want to do reward-based reinforcement learning, you might want to use a game-specific wrapper that provides a reward function. Currently, only a wrapper for [Pokemon Emerald](https://vimm.net/vault/5625) is provided, but more will be added in the future.
+
+A gym environment can be created as follows:
+```python
+from pygba import PyGBA, PyGBAEnv, PokemonEmerald
+
+rom_path = "path/to/pokemon_emerald.gba"
+gba = PyGBA(rom_path, autoload_save=True)  # if autoload_save is True, a save file will be loaded if one exists next to the ROM
+
+game_wrapper = PokemonEmerald()  # optionally customize the reward function by passing additional arguments
+env = PyGBAEnv(gba, game_wrapper)
+```
+
 ## Installation
 
 Install PyGBA with pip using:
@@ -55,6 +72,3 @@ After compiling mGBA, the Python bindings should be built at `build/python/lib.{
 To use it in your Python code, you'll need to add it to your `PYTHONPATH` environment variable.
 
 You can check if the bindings were built and installed correctly by running `python -c "import mgba"` (should output nothing).
-
-
-## Usage
