@@ -12,7 +12,7 @@ authors = [
 ]
 readme = "README.md"
 urls = { github = "https://github.com/dvruette/pygba" }
-license = { file = "LICENSE" }
+license = { text = "MIT" }
 keywords = ["gba", "mgba", "emulator", "gymnasium", "reinforcement-learning"]
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -20,10 +20,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries"
 ]
 dependencies = [
-    "gymnasium ~= 0.29.1",
-    "numpy ~= 1.26.1",
-    "pygame ~= 2.5.2",
+    "gymnasium >= 0.28.1",
+    "numpy >= 1.25.1",
+    "pygame >= 2.5.2",
 ]
 
 [tool.setuptools]
+# packages = ["pygba", "pygba.game_wrappers"]
 packages = ["pygba"]

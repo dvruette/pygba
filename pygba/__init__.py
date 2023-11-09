@@ -1,6 +1,7 @@
 from .gym_env import PyGBAEnv
 from .pygba import PyGBA
-from .game_wrappers import GameWrapper, PokemonEmerald
+from .game_wrappers.base import GameWrapper
+from .game_wrappers.pokemon_emerald import PokemonEmerald
 
 from gymnasium.envs.registration import register
 
