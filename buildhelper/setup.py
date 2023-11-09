@@ -4,6 +4,11 @@ from setuptools import setup
 from setuptools.command.install import install
 from setuptools.dist import Distribution
 
+
+"""
+A short script to help package compiled mGBA Python bindings into a wheel.
+"""
+
 class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
