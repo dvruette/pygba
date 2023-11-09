@@ -14,7 +14,7 @@ A gym environment can be created as follows:
 from pygba import PyGBA, PyGBAEnv, PokemonEmerald
 
 rom_path = "path/to/pokemon_emerald.gba"
-gba = PyGBA(rom_path, autoload_save=True)  # if autoload_save is True, a save file will be loaded if one exists next to the ROM
+gba = PyGBA.load(rom_path, autoload_save=True)  # if autoload_save is True, a save file will be loaded if one exists next to the ROM
 
 game_wrapper = PokemonEmerald()  # optionally customize the reward function by passing additional arguments
 env = PyGBAEnv(gba, game_wrapper)
