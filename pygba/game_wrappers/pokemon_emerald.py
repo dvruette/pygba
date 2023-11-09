@@ -122,6 +122,7 @@ class PokemonEmerald(GameWrapper):
         self.caught_pokemon_reward = caught_pokemon_reward
 
         self._prev_reward = 0.0
+        self._prev_game_state = None
 
     def game_state(self, gba):
         return get_game_state(gba)
@@ -140,7 +141,9 @@ class PokemonEmerald(GameWrapper):
 
         prev_reward = self._prev_reward
         self._prev_reward = reward
+        self._prev_game_state = game_state
         return reward - prev_reward
+        return 0
     
     def game_over(self, gba, observation):
         return False
@@ -149,7 +152,10 @@ class PokemonEmerald(GameWrapper):
         self._prev_reward = self.reward(gba, None)
     
     def info(self, gba, observation):
+        if self._prev_game_state is None:
+            self._prev_game_state = self.game_state(gba)
+
         return {
-            "game_state": self.game_state(gba),
+            "game_state": self._prev_game_state,
             "prev_reward": self._prev_reward,
         }
