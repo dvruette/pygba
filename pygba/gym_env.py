@@ -122,7 +122,9 @@ class PyGBAEnv(gym.Env):
         observation = self._get_observation()
 
         reward = 0
-        done = self._step >= self.max_episode_steps
+        done = False
+        if self.max_episode_steps is not None:
+            done = self._step >= self.max_episode_steps
         if self.game_wrapper is not None:
             reward = self.game_wrapper.reward(self.gba, observation)
             done = done or self.game_wrapper.game_over(self.gba, observation)
