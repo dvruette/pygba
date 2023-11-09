@@ -410,6 +410,9 @@ def parse_pokemon(data):
 
 def read_save_block_2(gba):
     save_block_2_ptr = gba.read_u32(ADRESSES["gSaveBlock2Ptr"])
+    if save_block_2_ptr == 0:
+        return None
+
     save_block_2_data = gba.read_memory(save_block_2_ptr, struct.calcsize(SaveBlock2_format))
     save_block_2 = SaveBlock2._make(struct.unpack("<" + SaveBlock2_format, save_block_2_data))
     save_block_2 = save_block_2._replace(pokedex=Pokedex._make(struct.unpack("<" + Pokedex_format, save_block_2.pokedex))._asdict())
@@ -417,6 +420,9 @@ def read_save_block_2(gba):
 
 def read_save_block_1(gba, parse_items: bool = False):
     save_block_1_ptr = gba.read_u32(ADRESSES["gSaveBlock1Ptr"])
+    if save_block_1_ptr == 0:
+        return None
+
     save_block_1_data = gba.read_memory(save_block_1_ptr, struct.calcsize(SaveBlock1_format))
     save_block_1 = SaveBlock1._make(struct.unpack("<" + SaveBlock1_format, save_block_1_data))
     
@@ -468,6 +474,9 @@ def read_save_block_1(gba, parse_items: bool = False):
 
 def read_pokemon_storage(gba):
     pokemon_storage_ptr = gba.read_u32(ADRESSES["gPokemonStoragePtr"])
+    if pokemon_storage_ptr == 0:
+        return None
+
     pokemon_storage_data = gba.read_memory(pokemon_storage_ptr, struct.calcsize(PokemonStorage_format))
     pokemon_storage = PokemonStorage._make(struct.unpack("<" + PokemonStorage_format, pokemon_storage_data))
     
@@ -491,6 +500,9 @@ def read_pokemon_storage(gba):
 @functools.lru_cache(maxsize=1)
 def read_species_names(gba):
     species_names_ptr = ADRESSES["gSpeciesNames"]
+    if species_names_ptr == 0:
+        return None
+
     species_names_data = gba.read_memory(species_names_ptr, NUM_SPECIES * (POKEMON_NAME_LENGTH +1))
     species_names = [
         EmeraldCharmap().decode(species_names_data[i:i+POKEMON_NAME_LENGTH+1])

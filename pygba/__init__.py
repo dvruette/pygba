@@ -11,4 +11,4 @@ __all__ = [
     "PokemonEmerald",
 ]
 
-register(id="PyGBA-v0", entry_point="gym_env:PyGBAEnv")
+register(id="PyGBA-v0", entry_point="pygba:PyGBAEnv")

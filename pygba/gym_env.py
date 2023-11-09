@@ -102,7 +102,7 @@ class PyGBAEnv(gym.Env):
         img = self._framebuffer.to_pil().convert("RGB")
         if self.obs_type == "grayscale":
             img = img.convert("L")
-        return np.array(img)
+        return np.array(img).transpose(1, 0, 2)
 
     def step(self, action_id):
         info = {}
@@ -123,18 +123,27 @@ class PyGBAEnv(gym.Env):
 
         reward = 0
         done = False
+        truncated = False
         if self.max_episode_steps is not None:
-            done = self._step >= self.max_episode_steps
+            truncated = self._step >= self.max_episode_steps
         if self.game_wrapper is not None:
             reward = self.game_wrapper.reward(self.gba, observation)
             done = done or self.game_wrapper.game_over(self.gba, observation)
             info.update(self.game_wrapper.info(self.gba, observation))
 
         self._step += 1
+        # print(f"\r step={self._step} | {reward=} | {done=} | {truncated=}", end="", flush=True)
 
-        return observation, reward, done, info
+        return observation, reward, done, truncated, info
+    
+    def check_if_done(self):
+        observation = self._get_observation()
+        done = self.game_wrapper.game_over(self.gba, observation)
 
-    def reset(self):
+        return done
+
+    def reset(self, seed=None):
+        info = {}
         self._step = 0
         self.gba.core.reset()
         if self._initial_state is not None:
@@ -145,10 +154,12 @@ class PyGBAEnv(gym.Env):
             # 2. run_frame after resetting the state, offsetting the savestate by one frame
             self.gba.core.run_frame()
         
+        observation = self._get_observation()
+        
         if self.game_wrapper is not None:
             self.game_wrapper.reset(self.gba)
-
-        return self._get_observation()
+            info.update(self.game_wrapper.info(self.gba, observation))
+        return observation, info
 
     def render(self):
         if self.render_mode is None:
