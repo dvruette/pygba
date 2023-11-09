@@ -1,4 +1,3 @@
-
 from .base import GameWrapper
 from .utils.emerald_utils import *
 

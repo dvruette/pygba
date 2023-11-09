@@ -24,7 +24,3 @@ dependencies = [
     "numpy >= 1.25.1",
     "pygame >= 2.5.2",
 ]
-
-[tool.setuptools]
-# packages = ["pygba", "pygba.game_wrappers"]
-packages = ["pygba"]
