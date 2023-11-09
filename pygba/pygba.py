@@ -1,4 +1,5 @@
 import mgba.core
+from mgba._pylib import ffi, lib
 
 from pygba.utils import KEY_MAP
 
@@ -14,6 +15,9 @@ class PyGBA:
     
     def __init__(self, core: mgba.core.Core):
         self.core = core
+
+        self.core.add_frame_callback(self._invalidate_mem_cache)
+        self._mem_cache = {}
 
     def wait(self, frames: int):
         for _ in range(frames):
@@ -61,11 +65,29 @@ class PyGBA:
     def press_select(self, frames: int = 2):
         self.press_key("select", frames)
 
+    def _invalidate_mem_cache(self):
+        self._mem_cache = {}
+    
+    def _get_memory_region(self, region_id: int):
+        if region_id not in self._mem_cache:
+            mem_core = self.core.memory.u8._core
+            size = ffi.new("size_t *")
+            ptr = ffi.cast("uint8_t *", mem_core.getMemoryBlock(mem_core, region_id, size))
+            self._mem_cache[region_id] = ffi.buffer(ptr, size[0])[:]
+        return self._mem_cache[region_id]
+
     def read_memory(self, address: int, size: int = 1):
-        return self.core.memory[address:address + size]
+        region_id = address >> lib.BASE_OFFSET
+        mem_region = self._get_memory_region(region_id)
+        mask = len(mem_region) - 1
+        address &= mask
+        return mem_region[address:address + size]
+
     def read_u8(self, address: int):
-        return self.core.memory[address]
+        return int.from_bytes(self.read_memory(address, 1), byteorder='little', signed=False)
+
     def read_u16(self, address: int):
-        return self.core.memory.u16[address]
+        return int.from_bytes(self.read_memory(address, 2), byteorder='little', signed=False)
+
     def read_u32(self, address: int):
-        return self.core.memory.u32[address]
+        return int.from_bytes(self.read_memory(address, 4), byteorder='little', signed=False)
