@@ -30,10 +30,15 @@ def load_pokemon_game(gba_file: str, autoload_save: bool = True):
 
 def main():
     gba_file = "roms/pokemon_emerald.gba"
+    gba = PyGBA.load(gba_file, autoload_save=False)
+    env = PyGBAEnv(gba, frameskip=8, render_mode="human")
+    env.reset()
+    obs, reward, done, truncated, info = env.step(env.get_action_id(None, "A"))
+    print(obs.shape, reward, done, info)
+
     gba = load_pokemon_game(gba_file, autoload_save=True)
     emerald_wrapper = PokemonEmerald()
     env = PyGBAEnv(gba, emerald_wrapper, frameskip=8, render_mode="human")
-
     state = emerald_wrapper.game_state(gba)
     del state["pokedex"]
     del state["boxes"]
