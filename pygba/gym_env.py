@@ -36,6 +36,7 @@ class PyGBAEnv(gym.Env):
         repeat_action_probability: float = 0.0,
         render_mode: Literal["human", "rgb_array"] | None = None,
         reset_to_initial_state: bool = True,
+        max_episode_steps: int | None = None,
         **kwargs,
     ):
         self.gba = gba
@@ -55,6 +56,7 @@ class PyGBAEnv(gym.Env):
         self.frameskip = frameskip
         self.repeat_action_probability = repeat_action_probability
         self.render_mode = render_mode
+        self.max_episode_steps = max_episode_steps
 
         self.arrow_keys = [None, "up", "down", "right", "left"]
         self.buttons = [None, "A", "B", "select", "start", "L", "R"]
@@ -75,7 +77,7 @@ class PyGBAEnv(gym.Env):
 
         self._screen = None
         self._clock = None
-        self._started = False
+        self._step = 0
         if reset_to_initial_state:
             self._initial_state = self.gba.core.save_raw_state()
             pass
@@ -120,15 +122,18 @@ class PyGBAEnv(gym.Env):
         observation = self._get_observation()
 
         reward = 0
-        done = False
+        done = self._step >= self.max_episode_steps
         if self.game_wrapper is not None:
             reward = self.game_wrapper.reward(self.gba, observation)
-            done = self.game_wrapper.game_over(self.gba, observation)
+            done = done or self.game_wrapper.game_over(self.gba, observation)
             info.update(self.game_wrapper.info(self.gba, observation))
+
+        self._step += 1
 
         return observation, reward, done, info
 
     def reset(self):
+        self._step = 0
         self.gba.core.reset()
         if self._initial_state is not None:
             self.gba.core.load_raw_state(self._initial_state)
