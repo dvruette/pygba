@@ -138,7 +138,8 @@ class PyGBAEnv(gym.Env):
             # 2. run_frame after resetting the state, offsetting the savestate by one frame
             self.gba.core.run_frame()
         
-        self.game_wrapper.reset(self.gba)
+        if self.game_wrapper is not None:
+            self.game_wrapper.reset(self.gba)
 
         return self._get_observation()
 
