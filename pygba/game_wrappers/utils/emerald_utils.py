@@ -1,3 +1,4 @@
+import functools
 import struct
 from collections import namedtuple
 
@@ -322,10 +323,10 @@ PokemonStorage_format = "".join([x[1] for x in PokemonStorage_spec])
 
 
 def parse_box_pokemon(data):
-    charmap = EmeraldCharmap()
+    if int.from_bytes(data[:4], "little") == 0:
+        return None
+
     box = BoxPokemon._make(struct.unpack("<" + BoxPokemon_format, data))
-    box = box._replace(nickname=charmap.decode(box.nickname))
-    box = box._replace(otName=charmap.decode(box.otName))
     
     key = box.otId ^ box.personality
     substructs_raw = struct.unpack("<" + "I" * 12, box.substructs)
@@ -384,12 +385,16 @@ def parse_box_pokemon(data):
         x3,
     )
 
-    box = box._replace(substructs=(
-        substruct0._asdict(),
-        substruct1._asdict(),
-        substruct2._asdict(),
-        substruct3._asdict(),
-    ))
+    box = box._replace(
+        nickname=EmeraldCharmap().decode(box.nickname),
+        otName=EmeraldCharmap().decode(box.otName),
+        substructs=(
+            substruct0._asdict(),
+            substruct1._asdict(),
+            substruct2._asdict(),
+            substruct3._asdict(),
+        ),
+    )
 
     box = box._asdict()
     del box["unknown"]
@@ -407,53 +412,56 @@ def read_save_block_2(gba):
     save_block_2_ptr = gba.read_u32(ADRESSES["gSaveBlock2Ptr"])
     save_block_2_data = gba.read_memory(save_block_2_ptr, struct.calcsize(SaveBlock2_format))
     save_block_2 = SaveBlock2._make(struct.unpack("<" + SaveBlock2_format, save_block_2_data))
-    save_block_2 = save_block_2._replace(playerName=EmeraldCharmap().decode(save_block_2.playerName))
     save_block_2 = save_block_2._replace(pokedex=Pokedex._make(struct.unpack("<" + Pokedex_format, save_block_2.pokedex))._asdict())
     return save_block_2._asdict()
 
-def read_save_block_1(gba):
+def read_save_block_1(gba, parse_items: bool = False):
     save_block_1_ptr = gba.read_u32(ADRESSES["gSaveBlock1Ptr"])
     save_block_1_data = gba.read_memory(save_block_1_ptr, struct.calcsize(SaveBlock1_format))
     save_block_1 = SaveBlock1._make(struct.unpack("<" + SaveBlock1_format, save_block_1_data))
     
-    # parse nested structs
-    save_block_1 = save_block_1._replace(pos=Coords16._make(struct.unpack("<" + Coords16_format, save_block_1.pos))._asdict())
-    save_block_1 = save_block_1._replace(location=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.location))._asdict())
-    save_block_1 = save_block_1._replace(continueGameWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.continueGameWarp))._asdict())
-    save_block_1 = save_block_1._replace(dynamicWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.dynamicWarp))._asdict())
-    save_block_1 = save_block_1._replace(lastHealLocation=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.lastHealLocation))._asdict())
-    save_block_1 = save_block_1._replace(escapeWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.escapeWarp))._asdict())
-
     player_party_count = save_block_1.playerPartyCount
-    save_block_1 = save_block_1._replace(playerParty=[
-        parse_pokemon(save_block_1.playerParty[i:i+struct.calcsize(Pokemon_format)])
-        for i in range(0, player_party_count * struct.calcsize(Pokemon_format), struct.calcsize(Pokemon_format))
-    ])
-
-    save_block_1 = save_block_1._replace(pcItems=[
-        ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.pcItems[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
-        for i in range(0, len(save_block_1.pcItems), struct.calcsize(ItemSlot_format))
-    ])
-    save_block_1 = save_block_1._replace(bagPocket_Items=[
-        ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_Items[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
-        for i in range(0, len(save_block_1.bagPocket_Items), struct.calcsize(ItemSlot_format))
-    ])
-    save_block_1 = save_block_1._replace(bagPocket_KeyItems=[
-        ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_KeyItems[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
-        for i in range(0, len(save_block_1.bagPocket_KeyItems), struct.calcsize(ItemSlot_format))
-    ])
-    save_block_1 = save_block_1._replace(bagPocket_PokeBalls=[
-        ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_PokeBalls[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
-        for i in range(0, len(save_block_1.bagPocket_PokeBalls), struct.calcsize(ItemSlot_format))
-    ])
-    save_block_1 = save_block_1._replace(bagPocket_TMHM=[
-        ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_TMHM[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
-        for i in range(0, len(save_block_1.bagPocket_TMHM), struct.calcsize(ItemSlot_format))
-    ])
-    save_block_1 = save_block_1._replace(bagPocket_Berries=[
-        ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_Berries[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
-        for i in range(0, len(save_block_1.bagPocket_Berries), struct.calcsize(ItemSlot_format))
-    ])
+    
+    # parse nested structs
+    save_block_1 = save_block_1._replace(
+        pos=Coords16._make(struct.unpack("<" + Coords16_format, save_block_1.pos))._asdict(),
+        location=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.location))._asdict(),
+        continueGameWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.continueGameWarp))._asdict(),
+        dynamicWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.dynamicWarp))._asdict(),
+        lastHealLocation=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.lastHealLocation))._asdict(),
+        escapeWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.escapeWarp))._asdict(),
+        playerParty=[
+            parse_pokemon(save_block_1.playerParty[i:i+struct.calcsize(Pokemon_format)])
+            for i in range(0, player_party_count * struct.calcsize(Pokemon_format), struct.calcsize(Pokemon_format))
+        ],
+    )
+    if parse_items:
+        save_block_1 = save_block_1._replace(
+            pcItems=[
+                ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.pcItems[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
+                for i in range(0, len(save_block_1.pcItems), struct.calcsize(ItemSlot_format))
+            ],
+            bagPocket_Items=[
+                ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_Items[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
+                for i in range(0, len(save_block_1.bagPocket_Items), struct.calcsize(ItemSlot_format))
+            ],
+            bagPocket_KeyItems=[
+                ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_KeyItems[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
+                for i in range(0, len(save_block_1.bagPocket_KeyItems), struct.calcsize(ItemSlot_format))
+            ],
+            bagPocket_PokeBalls=[
+                ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_PokeBalls[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
+                for i in range(0, len(save_block_1.bagPocket_PokeBalls), struct.calcsize(ItemSlot_format))
+            ],
+            bagPocket_TMHM=[
+                ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_TMHM[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
+                for i in range(0, len(save_block_1.bagPocket_TMHM), struct.calcsize(ItemSlot_format))
+            ],
+            bagPocket_Berries=[
+                ItemSlot._make(struct.unpack("<" + ItemSlot_format, save_block_1.bagPocket_Berries[i:i+struct.calcsize(ItemSlot_format)]))._asdict()
+                for i in range(0, len(save_block_1.bagPocket_Berries), struct.calcsize(ItemSlot_format))
+            ]
+        )
 
     return save_block_1._asdict()
 
@@ -465,20 +473,22 @@ def read_pokemon_storage(gba):
     
     box_mon_size = struct.calcsize(BoxPokemon_format)
     box_size = box_mon_size * IN_BOX_COUNT
-    pokemon_storage = pokemon_storage._replace(boxes=[
-        [
+    parsed_boxes = []
+    for j in range(TOTAL_BOXES_COUNT):
+        parsed_boxes.append([
             parse_box_pokemon(pokemon_storage.boxes[i:i+box_mon_size])
             for i in range(j * box_size, (j + 1) * box_size, box_mon_size)
+        ])
+    pokemon_storage = pokemon_storage._replace(
+        boxes=parsed_boxes,
+        boxNames=[
+            pokemon_storage.boxNames[i:i+BOX_NAME_LENGTH]
+            for i in range(0, len(pokemon_storage.boxNames), BOX_NAME_LENGTH + 1)
         ]
-        for j in range(TOTAL_BOXES_COUNT)
-    ])
-    pokemon_storage = pokemon_storage._replace(boxNames=[
-        EmeraldCharmap().decode(pokemon_storage.boxNames[i:i+BOX_NAME_LENGTH])
-        for i in range(0, len(pokemon_storage.boxNames), BOX_NAME_LENGTH + 1)
-    ])
+    )
     return pokemon_storage._asdict()
 
-
+@functools.lru_cache(maxsize=1)
 def read_species_names(gba):
     species_names_ptr = ADRESSES["gSpeciesNames"]
     species_names_data = gba.read_memory(species_names_ptr, NUM_SPECIES * (POKEMON_NAME_LENGTH +1))

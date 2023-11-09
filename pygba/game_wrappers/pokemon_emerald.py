@@ -78,7 +78,7 @@ def get_game_state(gba):
         boxed_mon
         for box in pokemon_storage["boxes"]
         for boxed_mon in box
-        if boxed_mon["substructs"][0]["species"] != 0
+        if boxed_mon is not None and boxed_mon["substructs"][0]["species"] != 0
     ]
     state["boxes"] = stored_mons
 
