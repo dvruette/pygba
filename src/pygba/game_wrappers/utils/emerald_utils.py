@@ -426,8 +426,8 @@ def read_save_block_1(gba, parse_items: bool = False):
     save_block_1_data = gba.read_memory(save_block_1_ptr, struct.calcsize(SaveBlock1_format))
     save_block_1 = SaveBlock1._make(struct.unpack("<" + SaveBlock1_format, save_block_1_data))
     
-    player_party_count = save_block_1.playerPartyCount
-    
+    player_party_count = min(6, save_block_1.playerPartyCount)
+
     # parse nested structs
     save_block_1 = save_block_1._replace(
         pos=Coords16._make(struct.unpack("<" + Coords16_format, save_block_1.pos))._asdict(),

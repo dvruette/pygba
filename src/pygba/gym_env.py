@@ -77,6 +77,7 @@ class PyGBAEnv(gym.Env):
 
         self._screen = None
         self._clock = None
+        self._total_reward = 0
         self._step = 0
         if reset_to_initial_state:
             self._initial_state = self.gba.core.save_raw_state()
@@ -131,6 +132,7 @@ class PyGBAEnv(gym.Env):
             done = done or self.game_wrapper.game_over(self.gba, observation)
             info.update(self.game_wrapper.info(self.gba, observation))
 
+        self._total_reward += reward
         self._step += 1
         # print(f"\r step={self._step} | {reward=} | {done=} | {truncated=}", end="", flush=True)
 
@@ -144,6 +146,7 @@ class PyGBAEnv(gym.Env):
 
     def reset(self, seed=None):
         info = {}
+        self._total_reward = 0
         self._step = 0
         self.gba.core.reset()
         if self._initial_state is not None:

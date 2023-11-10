@@ -8,6 +8,8 @@ class PyGBA:
     @staticmethod
     def load(gba_file: str, autoload_save: bool = False) -> "PyGBA":
         core = mgba.core.load_path(gba_file)
+        if core is None:
+            raise ValueError(f"Failed to load GBA file: {gba_file}")
         if autoload_save:
             core.autoload_save()
         core.reset()
