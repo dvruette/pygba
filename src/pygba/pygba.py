@@ -1,3 +1,6 @@
+import tempfile
+from pathlib import Path
+
 import mgba.core
 from mgba._pylib import ffi, lib
 
@@ -6,11 +9,22 @@ from pygba.utils import KEY_MAP
 
 class PyGBA:
     @staticmethod
-    def load(gba_file: str, autoload_save: bool = False) -> "PyGBA":
+    def load(gba_file: str, save_file: str | None = None) -> "PyGBA":
+        # create a temporary directory and copy the gba file into it
+        # this is necessary to prevent mgba from overwriting the save file (and to prevent crashes)
+        tmp_dir = Path(tempfile.mkdtemp())
+        tmp_gba = tmp_dir / "rom.gba"
+        tmp_gba.write_bytes(Path(gba_file).read_bytes())
+        gba_file = str(tmp_gba)
+        if save_file is not None:
+            tmp_save = tmp_dir / "rom.sav"
+            tmp_save.write_bytes(Path(save_file).read_bytes())
+            save_file = str(tmp_save)
+
         core = mgba.core.load_path(gba_file)
         if core is None:
             raise ValueError(f"Failed to load GBA file: {gba_file}")
-        if autoload_save:
+        if save_file is not None:
             core.autoload_save()
         core.reset()
         return PyGBA(core)
