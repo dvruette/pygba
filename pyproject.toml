@@ -20,7 +20,8 @@ classifiers = [
     "Topic :: Software Development :: Libraries"
 ]
 dependencies = [
-    "gymnasium >= 0.28.1",
-    "numpy >= 1.25.1",
-    "pygame >= 2.5.2",
+    "gymnasium",
+    "numpy",
+    "pygame",
+    "mgba ; platform_system == 'Linux' or platform_system == 'Darwin'",
 ]
