@@ -30,6 +30,11 @@ pip install pygba
 
 You'll also need to install [mGBA](https://mgba.io/) with Python bindings. By default, mGBA is installed without Python bindings, so until the situation is improved, you'll need to build mGBA from source.
 
+
+### Installing mGBA
+
+MGBA PACKAGE IS CURRENTLY BROKEN (help wanted)
+
 For Python >= 3.10 on Linux and macOS, you can use the pre-built wheels from here:
 ```bash
 pip install mgba
