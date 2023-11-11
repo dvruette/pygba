@@ -120,14 +120,41 @@ def test_parallel_saving():
     assert len(actions2) == received2
 
 
-def main():
+def test_game_parsing_on_walking_through_door():
     gba_file = "roms/pokemon_emerald.gba"
-    save_file = "roms/pokemon_emerald.sav"
+    save_file = "roms/pokemon_emerald.pokedex.sav"
+    # save_file = None
+    gba = load_pokemon_game(gba_file, save_file=save_file)
+    emerald_wrapper = PokemonEmerald()
+    env = PyGBAEnv(gba, emerald_wrapper, frameskip=1, render_mode="human")
+    actions = (
+        [("up", None) if i % 2 == 0 else ("up", "A") for i in range(60)]
+        + [("down", None) if i % 2 == 0 else ("down", "A") for i in range(60)]
+        + [("right", None) if i % 2 == 0 else ("right", "A") for i in range(24)]
+        + [("left", None) if i % 2 == 0 else ("left", "A") for i in range(24)]
+    ) * 5
+    # actions = [("right", None) if i % 2 == 0 else ("right", "A") for i in range(1000)]
+    for action in actions:
+        obs, reward, done, truncated, info = env.step(env.get_action_id(*action))
+        env.render()
+        if "game_state" in info:
+            print(info["game_state"]["location"], info["game_state"]["pos"])
+        else:
+            print(info)
+
+def main():
+    # test_parallel_saving()
+
+    test_game_parsing_on_walking_through_door()
+
+    gba_file = "roms/pokemon_emerald.gba"
+    # save_file = "roms/pokemon_emerald.sav"
+    save_file = None
     gba = PyGBA.load(gba_file, save_file=save_file)
     env = PyGBAEnv(gba, frameskip=8, render_mode="human")
     env.reset()
     obs, reward, done, truncated, info = env.step(env.get_action_id(None, "A"))
-    print(obs.shape, reward, done, info)
+    print(obs.shape, reward, done, truncated, info)
 
     gba = load_pokemon_game(gba_file, save_file=save_file)
     emerald_wrapper = PokemonEmerald()
@@ -136,8 +163,6 @@ def main():
     del state["pokedex"]
     del state["boxes"]
     print(json.dumps(state, indent=2))
-
-    test_parallel_saving()
 
     actions = [
         ("right", None),
@@ -168,7 +193,7 @@ def main():
 
     for action in actions:
         obs, reward, done, truncated, info = env.step(env.get_action_id(*action))
-        print(obs.shape, reward, done, info["game_state"]["pos"])
+        print(obs.shape, reward, done, info["game_state"]["location"])
         env.render()
 
 
