@@ -17,7 +17,7 @@ def get_game_state(gba):
     if save_block_1 is not None:
         flags = save_block_1["flags"]
 
-        if save_block_2 is not None:
+        if save_block_2 is not None and save_block_1["money"] != 0:
             state["money"] = save_block_1["money"] ^ save_block_2["encryptionKey"]
         state["pos"] = save_block_1["pos"]
         state["location"] = save_block_1["location"]
@@ -138,6 +138,11 @@ class PokemonEmerald(GameWrapper):
         else:
             self._game_state.update(get_game_state(gba))
         state = self._game_state
+
+        # Game state can get funky during loading screens, so we just wait until
+        # we get a valid observation.
+        if observation is not None and observation.sum() < 1:
+            return 0.0 
 
         reward = (
             state.get("num_badges", 0) * self.badge_reward
