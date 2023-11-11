@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pygba"
 description = "A Python wrapper around the Game Boy Advance emulator mGBA with built-in support for gymnasium environments."
-version = "0.2.6"
+version = "0.2.7"
 authors = [
     { name = "Dimitri von Rütte" }
 ]
