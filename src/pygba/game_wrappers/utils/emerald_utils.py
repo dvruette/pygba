@@ -18,6 +18,8 @@ ADRESSES = {
     "sSpeciesToHoennPokedexNum":    0x0831d94c,
     "sSpeciesToNationalPokedexNum": 0x0831dc82,
     "sHoennToNationalOrder":        0x0831dfb8,
+    "gExperienceTables":            0x0831f72c,
+    "gSpeciesInfo":                 0x083203cc,
     "gItems":                       0x085839a0,
 }
 
@@ -48,6 +50,11 @@ BOX_NAME_LENGTH = 8
 
 ## Flag IDs
 
+SCRIPT_FLAGS_START =                0x50
+TRAINER_FLAGS_START =               0x500
+SYSTEM_FLAGS_START =                0x860
+DAILY_FLAGS_START =                 0x920
+
 FLAG_DEFEATED_RUSTBORO_GYM =        0x4F0
 FLAG_DEFEATED_DEWFORD_GYM =         0x4F1
 FLAG_DEFEATED_MAUVILLE_GYM =        0x4F2
@@ -63,39 +70,39 @@ FLAG_DEFEATED_ELITE_4_PHOEBE =      0x4FC
 FLAG_DEFEATED_ELITE_4_GLACIA =      0x4FD
 FLAG_DEFEATED_ELITE_4_DRAKE =       0x4FE
 
-SYSTEM_FLAGS =                      0x860
-FLAG_SYS_POKEMON_GET =              SYSTEM_FLAGS + 0x0
-FLAG_SYS_POKEDEX_GET =              SYSTEM_FLAGS + 0x1
-FLAG_SYS_POKENAV_GET =              SYSTEM_FLAGS + 0x2
-FLAG_RECEIVED_POKEDEX_FROM_BIRCH =  SYSTEM_FLAGS + 0x84
 
-FLAG_BADGE01_GET =                  SYSTEM_FLAGS + 0x7
-FLAG_BADGE02_GET =                  SYSTEM_FLAGS + 0x8
-FLAG_BADGE03_GET =                  SYSTEM_FLAGS + 0x9
-FLAG_BADGE04_GET =                  SYSTEM_FLAGS + 0xa
-FLAG_BADGE05_GET =                  SYSTEM_FLAGS + 0xb
-FLAG_BADGE06_GET =                  SYSTEM_FLAGS + 0xc
-FLAG_BADGE07_GET =                  SYSTEM_FLAGS + 0xd
-FLAG_BADGE08_GET =                  SYSTEM_FLAGS + 0xe
+FLAG_SYS_POKEMON_GET =              SYSTEM_FLAGS_START + 0x0
+FLAG_SYS_POKEDEX_GET =              SYSTEM_FLAGS_START + 0x1
+FLAG_SYS_POKENAV_GET =              SYSTEM_FLAGS_START + 0x2
+FLAG_RECEIVED_POKEDEX_FROM_BIRCH =  SYSTEM_FLAGS_START + 0x84
 
-FLAG_VISITED_LITTLEROOT_TOWN =      SYSTEM_FLAGS + 0xF
-FLAG_VISITED_OLDALE_TOWN =          SYSTEM_FLAGS + 0x10
-FLAG_VISITED_DEWFORD_TOWN =         SYSTEM_FLAGS + 0x11
-FLAG_VISITED_LAVARIDGE_TOWN =       SYSTEM_FLAGS + 0x12
-FLAG_VISITED_FALLARBOR_TOWN =       SYSTEM_FLAGS + 0x13
-FLAG_VISITED_VERDANTURF_TOWN =      SYSTEM_FLAGS + 0x14
-FLAG_VISITED_PACIFIDLOG_TOWN =      SYSTEM_FLAGS + 0x15
-FLAG_VISITED_PETALBURG_CITY =       SYSTEM_FLAGS + 0x16
-FLAG_VISITED_SLATEPORT_CITY =       SYSTEM_FLAGS + 0x17
-FLAG_VISITED_MAUVILLE_CITY =        SYSTEM_FLAGS + 0x18
-FLAG_VISITED_RUSTBORO_CITY =        SYSTEM_FLAGS + 0x19
-FLAG_VISITED_FORTREE_CITY =         SYSTEM_FLAGS + 0x1A
-FLAG_VISITED_LILYCOVE_CITY =        SYSTEM_FLAGS + 0x1B
-FLAG_VISITED_MOSSDEEP_CITY =        SYSTEM_FLAGS + 0x1C
-FLAG_VISITED_SOOTOPOLIS_CITY =      SYSTEM_FLAGS + 0x1D
-FLAG_VISITED_EVER_GRANDE_CITY =     SYSTEM_FLAGS + 0x1E
+FLAG_BADGE01_GET =                  SYSTEM_FLAGS_START + 0x7
+FLAG_BADGE02_GET =                  SYSTEM_FLAGS_START + 0x8
+FLAG_BADGE03_GET =                  SYSTEM_FLAGS_START + 0x9
+FLAG_BADGE04_GET =                  SYSTEM_FLAGS_START + 0xa
+FLAG_BADGE05_GET =                  SYSTEM_FLAGS_START + 0xb
+FLAG_BADGE06_GET =                  SYSTEM_FLAGS_START + 0xc
+FLAG_BADGE07_GET =                  SYSTEM_FLAGS_START + 0xd
+FLAG_BADGE08_GET =                  SYSTEM_FLAGS_START + 0xe
 
-FLAG_IS_CHAMPION =                  SYSTEM_FLAGS + 0x1F
+FLAG_VISITED_LITTLEROOT_TOWN =      SYSTEM_FLAGS_START + 0xF
+FLAG_VISITED_OLDALE_TOWN =          SYSTEM_FLAGS_START + 0x10
+FLAG_VISITED_DEWFORD_TOWN =         SYSTEM_FLAGS_START + 0x11
+FLAG_VISITED_LAVARIDGE_TOWN =       SYSTEM_FLAGS_START + 0x12
+FLAG_VISITED_FALLARBOR_TOWN =       SYSTEM_FLAGS_START + 0x13
+FLAG_VISITED_VERDANTURF_TOWN =      SYSTEM_FLAGS_START + 0x14
+FLAG_VISITED_PACIFIDLOG_TOWN =      SYSTEM_FLAGS_START + 0x15
+FLAG_VISITED_PETALBURG_CITY =       SYSTEM_FLAGS_START + 0x16
+FLAG_VISITED_SLATEPORT_CITY =       SYSTEM_FLAGS_START + 0x17
+FLAG_VISITED_MAUVILLE_CITY =        SYSTEM_FLAGS_START + 0x18
+FLAG_VISITED_RUSTBORO_CITY =        SYSTEM_FLAGS_START + 0x19
+FLAG_VISITED_FORTREE_CITY =         SYSTEM_FLAGS_START + 0x1A
+FLAG_VISITED_LILYCOVE_CITY =        SYSTEM_FLAGS_START + 0x1B
+FLAG_VISITED_MOSSDEEP_CITY =        SYSTEM_FLAGS_START + 0x1C
+FLAG_VISITED_SOOTOPOLIS_CITY =      SYSTEM_FLAGS_START + 0x1D
+FLAG_VISITED_EVER_GRANDE_CITY =     SYSTEM_FLAGS_START + 0x1E
+
+FLAG_IS_CHAMPION =                  SYSTEM_FLAGS_START + 0x1F
 
 
 
@@ -222,6 +229,34 @@ Pokedex_spec = (
 Pokedex = namedtuple("Pokedex", [x[0] for x in Pokedex_spec])
 Pokedex_format = "".join([x[1] for x in Pokedex_spec])
 
+
+SpeciesInfo_spec = (
+    ("baseHP", "B"),
+    ("baseAttack", "B"),
+    ("baseDefense", "B"),
+    ("baseSpeed", "B"),
+    ("baseSpAttack", "B"),
+    ("baseSpDefense", "B"),
+    ("type1", "B"),
+    ("type2", "B"),
+    ("catchRate", "B"),
+    ("expYield", "B"),
+    ("evYield", "H"),
+    ("itemCommon", "H"),
+    ("itemRare", "H"),
+    ("genderRatio", "B"),
+    ("eggCycles", "B"),
+    ("friendship", "B"),
+    ("growthRate", "B"),
+    ("eggGroup1", "B"),
+    ("eggGroup2", "B"),
+    ("ability1", "B"),
+    ("ability2", "B"),
+    ("safariZoneFleeRate", "B"),
+    ("bodyColor", "Bxx"),
+)
+SpeciesInfo = namedtuple("SpeciesInfo", [x[0] for x in SpeciesInfo_spec])
+SpeciesInfo_format = "".join([x[1] for x in SpeciesInfo_spec])
 
 Coords16_spec = (
     ("x", "H"),
@@ -509,3 +544,32 @@ def read_species_names(gba):
         for i in range(0, len(species_names_data), POKEMON_NAME_LENGTH+1)
     ]
     return species_names
+
+@functools.lru_cache(maxsize=1)
+def read_species_info(gba):
+    species_info_ptr = ADRESSES["gSpeciesInfo"]
+    if species_info_ptr == 0:
+        return None
+
+    species_info_data = gba.read_memory(species_info_ptr, NUM_SPECIES * struct.calcsize(SpeciesInfo_format))
+    species_info = [
+        SpeciesInfo._make(struct.unpack("<" + SpeciesInfo_format, species_info_data[i:i+struct.calcsize(SpeciesInfo_format)]))
+        for i in range(0, len(species_info_data), struct.calcsize(SpeciesInfo_format))
+    ]
+    return species_info
+
+@functools.lru_cache(maxsize=1)
+def read_experience_tables(gba):
+    exp_table_ptr = ADRESSES["gExperienceTables"]
+    if exp_table_ptr == 0:
+        return None
+    
+    # there's 6 different growth rates and 101 different levels, each being a 4-byte int
+    num_ints = 6 * 101
+    exp_table_data = gba.read_memory(exp_table_ptr, num_ints * 4)
+    exp_table_format = "<" + "I" * num_ints
+    exp_table_flat = struct.unpack(exp_table_format, exp_table_data)
+    exp_tables = []
+    for i in range(0, len(exp_table_flat), 101):
+        exp_tables.append(exp_table_flat[i:i+101])
+    return exp_tables
