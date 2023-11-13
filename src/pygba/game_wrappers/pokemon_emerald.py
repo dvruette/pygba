@@ -215,6 +215,7 @@ class PokemonEmerald(GameWrapper):
     
     def reset(self, gba):
         self._game_state = {}
+        self._prev_reward = 0.0
         self._prev_reward = self.reward(gba, None)
         self._prev_game_state = {}
     
