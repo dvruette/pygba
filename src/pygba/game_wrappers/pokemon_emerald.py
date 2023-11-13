@@ -77,6 +77,13 @@ def get_game_state(gba):
 
         state["party"] = save_block_1["playerParty"]
 
+        script_flags = flags[SCRIPT_FLAGS_START // 8 : TRAINER_FLAGS_START // 8]
+        trainer_flags = flags[TRAINER_FLAGS_START // 8 : SYSTEM_FLAGS_START // 8]
+        system_flags = flags[SYSTEM_FLAGS_START // 8 : DAILY_FLAGS_START // 8]
+        state["script_flags"] = script_flags
+        state["trainer_flags"] = trainer_flags
+        state["system_flags"] = system_flags
+
     if pokemon_storage is not None:
         stored_mons = [
             boxed_mon
@@ -109,6 +116,27 @@ def get_game_state(gba):
     return state
 
 
+def count_changed_flags(old_flags, new_flags):
+    if new_flags is not None and old_flags is not None:
+        return sum([
+            (new_flag ^ old_flag).bit_count()
+            for new_flag, old_flag in zip(new_flags, old_flags)
+        ])
+    else:
+        return 0
+
+
+def get_gained_exp(mon, species_info, experience_tables):
+    if mon is None:
+        return 0
+    species_id = mon["substructs"][0]["species"]
+    level = mon["substructs"][3]["metLevel"]
+    exp = mon["substructs"][0]["experience"]
+    growth_rate = species_info[species_id].growthRate
+    exp_at_met_level = experience_tables[growth_rate][level]
+    return exp - exp_at_met_level
+
+
 class PokemonEmerald(GameWrapper):
     def __init__(
         self,
@@ -118,6 +146,9 @@ class PokemonEmerald(GameWrapper):
         money_reward: float = 0.0,
         seen_pokemon_reward: float = 0.2,
         caught_pokemon_reward: float = 1.0,
+        trainer_beat_reward: float = 1.0,
+        event_reward: float = 1.0,
+        exp_reward_scale: float = 0.1,
     ):
         self.badge_reward = badge_reward
         self.champion_reward = champion_reward
@@ -125,9 +156,13 @@ class PokemonEmerald(GameWrapper):
         self.money_reward = money_reward
         self.seen_pokemon_reward = seen_pokemon_reward
         self.caught_pokemon_reward = caught_pokemon_reward
+        self.trainer_beat_reward = trainer_beat_reward
+        self.event_reward = event_reward
+        self.exp_reward_scale = exp_reward_scale
 
         self._prev_reward = 0.0
         self._game_state = {}
+        self._prev_game_state = {}
 
     def game_state(self, gba):
         return get_game_state(gba)
@@ -144,6 +179,20 @@ class PokemonEmerald(GameWrapper):
         if observation is not None and observation.sum() < 1:
             return 0.0 
 
+        new_trainer_flags = state.get("trainer_flags", None)
+        prev_trainer_flags = self._prev_game_state.get("trainer_flags", None)
+        changed_trainer_flags = count_changed_flags(prev_trainer_flags, new_trainer_flags)
+
+        new_script_flags = state.get("script_flags", None)
+        prev_script_flags = self._prev_game_state.get("script_flags", None)
+        changed_script_flags = count_changed_flags(prev_script_flags, new_script_flags)
+
+        species_info = read_species_info(gba)
+        experience_tables = read_experience_tables(gba)
+        all_mons = list(map(lambda x: x["box"], state.get("party", []))) + state.get("boxes", [])
+        total_gained_exp = sum(get_gained_exp(mon, species_info, experience_tables) for mon in all_mons)
+        exp_reward = total_gained_exp ** (1 / 3)
+
         reward = (
             state.get("num_badges", 0) * self.badge_reward
             + state.get("is_champion", 0) * self.champion_reward
@@ -151,6 +200,9 @@ class PokemonEmerald(GameWrapper):
             + state.get("money", 0) * self.money_reward
             + state.get("num_seen_pokemon", 0) * self.seen_pokemon_reward
             + state.get("num_caught_pokemon", 0) * self.caught_pokemon_reward
+            + changed_trainer_flags * self.trainer_beat_reward
+            + changed_script_flags * self.event_reward
+            + exp_reward * self.exp_reward_scale
         )
 
         prev_reward = self._prev_reward
@@ -162,8 +214,9 @@ class PokemonEmerald(GameWrapper):
         return False
     
     def reset(self, gba):
+        self._game_state = {}
         self._prev_reward = self.reward(gba, None)
-        self._game_state = None
+        self._prev_game_state = {}
     
     def info(self, gba, observation):
         if self._game_state is None:
