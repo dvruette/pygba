@@ -8,6 +8,8 @@ import mgba.image
 import mgba.log
 
 from pygba import PyGBA, PyGBAEnv, PokemonEmerald
+from custom_wrapper import CustomEmeraldWrapper
+from pygba.game_wrappers.pokemon_emerald import get_game_state
 
 mgba.log.silence()
 
@@ -142,10 +144,37 @@ def test_game_parsing_on_walking_through_door():
         else:
             print(info)
 
+def test_exp_and_event_reward():
+    gba_file = "roms/pokemon_emerald.gba"
+    gba = load_pokemon_game(gba_file, save_file="saves/pokemon_emerald.before_starter.sav")
+    emerald_wrapper = CustomEmeraldWrapper()
+    env = PyGBAEnv(gba, emerald_wrapper, frameskip=16, render_mode="human")
+
+    actions = (
+        [a for pair in zip([("up", "A") for _ in range(23)], [("up", None) for _ in range(23)]) for a in pair]
+        + [a for pair in zip([("left", "A") for _ in range(10)], [("left", None) for _ in range(10)]) for a in pair]
+        + [a for pair in zip([(None, "A") for _ in range(100)], [(None, None) for _ in range(100)]) for a in pair]
+        + [a for pair in zip([("down", "A") for _ in range(20)], [("down", None) for _ in range(20)]) for a in pair]
+        + [(None, "start"), (None, None), (None, None), (None, "A"), (None, None), (None, None), (None, None)]
+    )
+
+    for i, action in enumerate(actions):
+        obs, reward, done, truncated, info = env.step(env.get_action_id(*action))
+        # print(obs.shape, reward, done, info["game_state"]["location"])
+        if (i + 1) % 12 == 0:
+            print(json.dumps(info["rewards"], indent=2))
+            env.render()
+    print(json.dumps(info["rewards"], indent=2))
+    env.render()
+    print(info["game_state"]["party"])
+    get_game_state(gba)
+
 def main():
     # test_parallel_saving()
 
-    test_game_parsing_on_walking_through_door()
+    # test_game_parsing_on_walking_through_door()
+
+    test_exp_and_event_reward()
 
     gba_file = "roms/pokemon_emerald.gba"
     save_file = "saves/pokemon_emerald.pokedex.sav"
@@ -166,38 +195,6 @@ def main():
     del state["trainer_flags"]
     del state["system_flags"]
     print(json.dumps(state, indent=2))
-
-    actions = [
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("up", None),
-        ("up", None),
-        ("up", None),
-        ("up", None),
-        ("up", None),
-        ("up", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-        ("right", None),
-    ]
-
-    for action in actions:
-        obs, reward, done, truncated, info = env.step(env.get_action_id(*action))
-        print(obs.shape, reward, done, info["game_state"]["location"])
-        env.render()
 
 
 if __name__ == "__main__":
