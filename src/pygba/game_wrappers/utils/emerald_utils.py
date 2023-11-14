@@ -461,7 +461,8 @@ def read_save_block_1(gba, parse_items: bool = False):
     save_block_1_data = gba.read_memory(save_block_1_ptr, struct.calcsize(SaveBlock1_format))
     save_block_1 = SaveBlock1._make(struct.unpack("<" + SaveBlock1_format, save_block_1_data))
     
-    player_party_count = min(6, save_block_1.playerPartyCount)
+    player_party_count = gba.read_u8(ADRESSES["gPlayerPartyCount"])
+    player_party_data = gba.read_memory(ADRESSES["gPlayerParty"], player_party_count * struct.calcsize(Pokemon_format))
 
     # parse nested structs
     save_block_1 = save_block_1._replace(
@@ -472,7 +473,7 @@ def read_save_block_1(gba, parse_items: bool = False):
         lastHealLocation=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.lastHealLocation))._asdict(),
         escapeWarp=WarpData._make(struct.unpack("<" + WarpData_format, save_block_1.escapeWarp))._asdict(),
         playerParty=[
-            parse_pokemon(save_block_1.playerParty[i:i+struct.calcsize(Pokemon_format)])
+            parse_pokemon(player_party_data[i:i+struct.calcsize(Pokemon_format)])
             for i in range(0, player_party_count * struct.calcsize(Pokemon_format), struct.calcsize(Pokemon_format))
         ],
     )
