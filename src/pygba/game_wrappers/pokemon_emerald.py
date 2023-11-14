@@ -125,6 +125,15 @@ def count_changed_flags(old_flags, new_flags):
     else:
         return 0
 
+def count_flags(flags):
+    if flags is not None:
+        return sum([
+            flag.bit_count()
+            for flag in flags
+        ])
+    else:
+        return 0
+
 
 def get_gained_exp(mon, species_info, experience_tables):
     if mon is None:
@@ -160,6 +169,7 @@ class PokemonEmerald(GameWrapper):
         self.event_reward = event_reward
         self.exp_reward_scale = exp_reward_scale
 
+        self._total_script_flags = 0
         self._prev_reward = 0.0
         self._game_state = {}
         self._prev_game_state = {}
@@ -180,12 +190,12 @@ class PokemonEmerald(GameWrapper):
             return 0.0 
 
         new_trainer_flags = state.get("trainer_flags", None)
-        prev_trainer_flags = self._prev_game_state.get("trainer_flags", None)
-        changed_trainer_flags = count_changed_flags(prev_trainer_flags, new_trainer_flags)
+        num_trainer_flags = count_flags(new_trainer_flags)
 
         new_script_flags = state.get("script_flags", None)
         prev_script_flags = self._prev_game_state.get("script_flags", None)
         changed_script_flags = count_changed_flags(prev_script_flags, new_script_flags)
+        self._total_script_flags += changed_script_flags
 
         species_info = read_species_info(gba)
         experience_tables = read_experience_tables(gba)
@@ -200,8 +210,8 @@ class PokemonEmerald(GameWrapper):
             + state.get("money", 0) * self.money_reward
             + state.get("num_seen_pokemon", 0) * self.seen_pokemon_reward
             + state.get("num_caught_pokemon", 0) * self.caught_pokemon_reward
-            + changed_trainer_flags * self.trainer_beat_reward
-            + changed_script_flags * self.event_reward
+            + num_trainer_flags * self.trainer_beat_reward
+            + self._total_script_flags * self.event_reward
             + exp_reward * self.exp_reward_scale
         )
 
@@ -215,6 +225,7 @@ class PokemonEmerald(GameWrapper):
     
     def reset(self, gba):
         self._game_state = {}
+        self._total_script_flags = 0
         self._prev_reward = 0.0
         self._prev_reward = self.reward(gba, None)
         self._prev_game_state = {}
