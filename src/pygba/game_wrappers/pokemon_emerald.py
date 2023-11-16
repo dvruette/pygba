@@ -138,10 +138,24 @@ def count_flags(flags):
 def get_gained_exp(mon, species_info, experience_tables):
     if mon is None:
         return 0
-    species_id = mon["substructs"][0]["species"]
+
     level = mon["substructs"][3]["metLevel"]
+    if level < 0 or level > 100:
+        logger.warning(f"Invalid level: {level}")
+        return 0
+
     exp = mon["substructs"][0]["experience"]
+    species_id = mon["substructs"][0]["species"]
+
+    if species_id < 0 or species_id >= len(species_info):
+        logger.warning(f"Invalid species id: {species_id}")
+        return 0
+    
     growth_rate = species_info[species_id].growthRate
+    if growth_rate < 0 or growth_rate >= len(experience_tables):
+        logger.warning(f"Invalid growth rate: {growth_rate}")
+        return 0
+
     exp_at_met_level = experience_tables[growth_rate][level]
     return exp - exp_at_met_level
 
