@@ -390,8 +390,8 @@ def parse_box_pokemon(data):
         [
             (x1 >> 0)  & 0xFFFF,
             (x1 >> 16) & 0xFFFF,
-            (x2 >> 32) & 0xFFFF,
-            (x2 >> 48) & 0xFFFF,
+            (x2 >> 0) & 0xFFFF,
+            (x2 >> 16) & 0xFFFF,
         ],
         [
             (x3 >> 0)  & 0xFF,
