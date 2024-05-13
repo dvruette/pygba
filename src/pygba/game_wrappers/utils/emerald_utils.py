@@ -349,6 +349,7 @@ SaveBlock1_format = "".join([x[1] for x in SaveBlock1_spec])
 
 PokemonStorage_spec = (
     ("currentBox", "B"),
+    ("padding", "3s"),  # 3 bytes padding
     ("boxes", f"{struct.calcsize(BoxPokemon_format) * TOTAL_BOXES_COUNT * IN_BOX_COUNT}s"),
     ("boxNames", f"{TOTAL_BOXES_COUNT * (BOX_NAME_LENGTH + 1)}s"),
     ("boxWallpapers", f"{TOTAL_BOXES_COUNT}s"),
