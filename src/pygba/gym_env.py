@@ -5,6 +5,8 @@ import gymnasium as gym
 import mgba.core
 import mgba.image
 import numpy as np
+from PIL import Image
+from cffi import FFI
 
 from .utils import KEY_MAP
 from .pygba import PyGBA
@@ -100,7 +102,10 @@ class PyGBAEnv(gym.Env):
         return self.actions.index(action)
 
     def _get_observation(self):
-        img = self._framebuffer.to_pil().convert("RGB")
+        img = np.frombuffer(FFI().buffer(self._framebuffer.buffer), dtype=np.uint32) # FFI to np
+        img = img.view(np.uint8).reshape(160,240,4) # to RGBA
+        img = Image.fromarray(img).convert("RGB") # to pillow RGB
+
         if self.obs_type == "grayscale":
             img = img.convert("L")
         return np.array(img).transpose(1, 0, 2)
@@ -172,7 +177,10 @@ class PyGBAEnv(gym.Env):
             )
             return
         
-        img = self._framebuffer.to_pil().convert("RGB")
+        img = np.frombuffer(FFI().buffer(self._framebuffer.buffer), dtype=np.uint32) # FFI to np
+        img = img.view(np.uint8).reshape(160,240,4) # to RGBA
+        img = Image.fromarray(img).convert("RGB") # to pillow RGB
+        
         if self.obs_type == "grayscale":
             img = img.convert("L")
         
