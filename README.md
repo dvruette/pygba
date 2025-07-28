@@ -53,7 +53,7 @@ git clone https://github.com/mgba-emu/mgba.git
 cd mgba
 ```
 
-- **Unix**:
+#### Unix
     On Unix-based systems, run the following commands:
     ```bash
     mkdir build
@@ -63,7 +63,7 @@ cd mgba
     sudo make install
     ```
 
-- **macOS**:
+#### macOS
     On macOS, additional dependencies are required:
     ```bash
     brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
@@ -75,7 +75,7 @@ cd mgba
     ```
     Note: If both `qt` and `qt5` are installed you might run into issues. If that's the case, try uninstalling `qt`.
 
-- **Windows**:
+#### Windows
     Please follow the official instructions [here](https://github.com/mgba-emu/mgba/#windows-developer-building).
 
 After compiling mGBA, the Python bindings should be built at `build/python/lib.{platform}-{architecture}-cpython-{version}/mgba`.
