@@ -54,29 +54,29 @@ cd mgba
 ```
 
 #### Unix
-    On Unix-based systems, run the following commands:
-    ```bash
-    mkdir build
-    cd build
-    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_PYTHON=ON ..
-    make
-    sudo make install
-    ```
+On Unix-based systems, run the following commands:
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_PYTHON=ON ..
+make
+sudo make install
+```
 
 #### macOS
-    On macOS, additional dependencies are required:
-    ```bash
-    brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
-    mkdir build
-    cd build
-    cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` -DBUILD_PYTHON=ON ..
-    make
-    sudo make install
-    ```
-    Note: If both `qt` and `qt5` are installed you might run into issues. If that's the case, try uninstalling `qt`.
+On macOS, additional dependencies are required:
+```bash
+brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
+mkdir build
+cd build
+cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` -DBUILD_PYTHON=ON ..
+make
+sudo make install
+```
+Note: If both `qt` and `qt5` are installed you might run into issues. If that's the case, try uninstalling `qt`.
 
 #### Windows
-    Please follow the official instructions [here](https://github.com/mgba-emu/mgba/#windows-developer-building).
+Please follow the official instructions [here](https://github.com/mgba-emu/mgba/#windows-developer-building).
 
 After compiling mGBA, the Python bindings should be built at `build/python/lib.{platform}-{architecture}-cpython-{version}/mgba`.
 To use it in your Python code, you'll need to add it to your `PYTHONPATH` environment variable.
